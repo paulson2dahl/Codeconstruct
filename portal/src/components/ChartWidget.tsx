@@ -111,7 +111,7 @@ export const ChartWidget = ({ title, config }: ChartWidgetProps) => {
         return (
           <ResponsiveContainer width="100%" height={height}>
             <BarChart {...commonProps} layout="vertical">
-              {config.showGrid !== false && <CartesianGrid strokeDasharray="3 3" stroke={config.showGrid === false ? 'transparent' : '#3a4150'} vertical={false} />}
+              {config.showGrid !== false && <CartesianGrid strokeDasharray="3 3" stroke="#3a4150" vertical={false} />}
               <YAxis type="category" dataKey={xKey} stroke="#5a6475" tick={{ fill: '#a0a0b0', fontSize: 11 }} width={100} />
               <XAxis stroke="#5a6475" tick={{ fill: '#a0a0b0', fontSize: 11 }} />
               {config.showTooltip !== false && <Tooltip content={<CustomTooltip />} />}

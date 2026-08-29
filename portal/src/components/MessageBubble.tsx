@@ -177,7 +177,7 @@ const DataTable = ({ title, data }: { title: string; data: any }) => {
             </thead>
             <tbody>
               {rows.slice(0, 50).map((row: any, i: number) => (
-                <tr key={i}>{columns.map(c => <td key={c}>{row[c] ?? ''}</td>)}</tr>
+                <tr key={i}>{columns.map((c: string) => <td key={c}>{row[c] ?? ''}</td>)}</tr>
               ))}
             </tbody>
           </table>

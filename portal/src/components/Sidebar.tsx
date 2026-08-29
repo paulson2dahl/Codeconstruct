@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { LayoutDashboard, FileText, Database, AlertTriangle, Settings, ChevronLeft, ChevronRight, Upload, BarChart3, Link as LinkIcon } from 'lucide-react';
 import './Sidebar.css';
 
@@ -11,7 +11,6 @@ const NAV_ITEMS = [
 ];
 
 export const Sidebar = () => {
-  const location = useLocation();
   const [collapsed, setCollapsed] = React.useState(false);
 
   return (

@@ -22,7 +22,7 @@ export const useMultimodal = (options: MultimodalOptions = {}) => {
   } = options;
 
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
-  const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
+  const [uploadProgress] = useState<Record<string, number>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const validateFile = useCallback((file: File): string | null => {

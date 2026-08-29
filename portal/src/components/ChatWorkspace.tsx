@@ -9,6 +9,7 @@ export const ChatWorkspace = () => {
   const { sendMessage, messages, isStreaming, setMessages } = useSession();
   const [input, setInput] = React.useState('');
   const [attachments, setAttachments] = React.useState<File[]>([]);
+  const [_showAttachments, setShowAttachments] = React.useState(false);
   const [selectedModel, setSelectedModel] = React.useState('llama-4-maverick');
   const { handleFileUpload, handleImagePaste, supportedTypes } = useMultimodal();
 

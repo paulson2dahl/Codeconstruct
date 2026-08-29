@@ -62,7 +62,7 @@ interface SessionProviderProps {
 
 export const SessionProvider = ({ children }: SessionProviderProps) => {
   const [session, setSession] = useState<Session | null>(null);
-  const [user, setUser] = useState<User | null>({
+  const [user] = useState<User | null>({
     id: 'user-1',
     name: 'Admin User',
     email: 'admin@example.com',
@@ -75,8 +75,9 @@ export const SessionProvider = ({ children }: SessionProviderProps) => {
   useEffect(() => {
     const initSDK = async () => {
       try {
+        const env = import.meta.env as Record<string, string | undefined>;
         const client = new TrueForgeSDK({
-          baseUrl: import.meta.env.VITE_TRUEFORGE_URL || 'http://localhost:8790',
+          baseUrl: env.VITE_TRUEFORGE_URL || 'http://localhost:8790',
         });
         setSdk(client);
         await connect(client);
@@ -116,7 +117,7 @@ export const SessionProvider = ({ children }: SessionProviderProps) => {
 
   const sendMessage = useCallback(async (
     input: { content: string; files?: File[]; model?: string },
-    parentId?: string
+    _parentId?: string
   ) => {
     if (!sdk || !session) return;
 
@@ -128,24 +129,24 @@ export const SessionProvider = ({ children }: SessionProviderProps) => {
     addMessage(userMessage);
     setIsStreaming(true);
 
+    const assistantMessage: Message = {
+      id: `msg-${Date.now() + 1}`,
+      role: 'assistant',
+      content: '',
+      streaming: true,
+    };
+    addMessage(assistantMessage);
+
     try {
       const stream = await sdk.createTurnStream(session.id, {
         input: [{ type: 'user.message', content: input.content }],
         model: input.model,
       });
 
-      let assistantMessage: Message = {
-        id: `msg-${Date.now() + 1}`,
-        role: 'assistant',
-        content: '',
-        streaming: true,
-      };
-      addMessage(assistantMessage);
-
       for await (const event of stream) {
         if (event.type === 'model.message.delta' && event.content) {
-          assistantMessage = { ...assistantMessage, content: assistantMessage.content + event.content };
-          updateMessage(assistantMessage.id, { content: assistantMessage.content });
+          const updated = { ...assistantMessage, content: assistantMessage.content + event.content };
+          updateMessage(assistantMessage.id, { content: updated.content });
         } else if (event.type === 'model.message' && event.finishReason === 'stop') {
           updateMessage(assistantMessage.id, {
             content: event.content || assistantMessage.content,
@@ -155,12 +156,12 @@ export const SessionProvider = ({ children }: SessionProviderProps) => {
           });
           break;
         } else if (event.type === 'tool.approval_required') {
-          // Handle approval - this would show ApprovalRequest component
           console.log('Approval required:', event);
         } else if (event.type === 'turn.done') {
-          if (event.state.status === 'error') {
+          const state = event.state;
+          if (state && state.status === 'error') {
             updateMessage(assistantMessage.id, {
-              content: `Error: ${event.state.error?.message || 'Unknown error'}`,
+              content: `Error: ${state.error?.message || 'Unknown error'}`,
               streaming: false,
             });
           }

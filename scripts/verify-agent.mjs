@@ -30,13 +30,25 @@ function main() {
     process.exit(1);
   }
 
-  // Check instructions mention both incidents
-  if (!agent.instructions.includes('MARKS INTEGRITY')) {
-    console.error('Instructions missing MARKS INTEGRITY incident');
+  // Check instructions mention the core capabilities
+  if (!agent.instructions.includes('SCHEMA DISCOVERY') && !agent.instructions.includes('schema discovery')) {
+    console.error('Instructions missing schema discovery');
     process.exit(1);
   }
-  if (!agent.instructions.includes('STAFF & TIMETABLE')) {
-    console.error('Instructions missing STAFF & TIMETABLE incident');
+  if (!agent.instructions.includes('DATA INGESTION') && !agent.instructions.includes('data ingestion')) {
+    console.error('Instructions missing data ingestion');
+    process.exit(1);
+  }
+  if (!agent.instructions.includes('ANOMALY') && !agent.instructions.includes('anomaly')) {
+    console.error('Instructions missing anomaly detection');
+    process.exit(1);
+  }
+  if (!agent.instructions.includes('MATCHING') && !agent.instructions.includes('matching')) {
+    console.error('Instructions missing matching/optimization');
+    process.exit(1);
+  }
+  if (!agent.instructions.includes('ANALYTICS') && !agent.instructions.includes('analytics')) {
+    console.error('Instructions missing analytics');
     process.exit(1);
   }
 
@@ -46,14 +58,14 @@ function main() {
     process.exit(1);
   }
 
-  // Check mcp_servers (optional but should reference supabase)
+  // Check mcp_servers (optional but should reference sqlite-local)
   if (!Array.isArray(agent.mcp_servers)) {
     console.error('Missing mcp_servers array');
     process.exit(1);
   }
-  const hasSupabase = agent.mcp_servers.some(s => s.name === 'supabase');
-  if (!hasSupabase) {
-    console.error('Missing supabase MCP server reference');
+  const mcpNames = agent.mcp_servers.map(s => s.name);
+  if (!mcpNames.includes('sqlite-local')) {
+    console.error('Missing sqlite-local MCP server reference');
     process.exit(1);
   }
 
