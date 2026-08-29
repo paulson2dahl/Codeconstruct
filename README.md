@@ -306,4 +306,95 @@ MIT License — Feel free to use, modify, and distribute.
 
 ---
 
+## 🏆 Hackathon Submission
+
+**Track**: Agent Harness Hackathon (WeMakeDevs × TrueFoundry × Qodo × OpenAI) — **Aug 24–30 2026**
+
+**Target tracks**:
+- ✅ **Best Use of TrueForge** — `tf-client.ts` drives real session/turn streaming, tool approval, subagent threads
+- ✅ **Best Code Quality** — Qodo review configured via `.pr_agent.toml` + GitHub Action
+- ✅ **Best UI** — React/TypeScript/Vite portal with custom school-themed components
+
+### How to verify this submission
+
+```bash
+# 1. Verify the agent spec
+node scripts/verify-agent.mjs          # → agent_ok
+
+# 2. Run the full test suite
+npm test                                # → all 4 verifies pass
+
+# 3. Lint the GATES ledger
+node scripts/gate-lint.mjs GATES.md     # → 7 gates, structurally valid
+
+# 4. Trigger the demo loop (Qodo PR review)
+bash scripts/demo-qodo-pr.sh            # → opens PR, polls for Qodo comment
+```
+
+### Mandatory deliverables (per Rule 9)
+
+| Deliverable | Status | Location |
+|------------|--------|----------|
+| 1. Public source-code repository | ✅ | https://github.com/paulson2dahl/Codeconstruct |
+| 2. README with setup steps | ✅ | This file |
+| 3. Demo video (~3 min) | 📋 | TODO — see `scripts/demo-qodo-pr.sh` to capture |
+| 4. Short write-up | ✅ | `docs/02-challenge-brief-and-judging.md`, `docs/04-archetypes-deep-dive-and-project-fit.md` |
+| 5. Blog post link | Optional | n/a |
+
+### Disclosure (per Rule 11)
+
+This project was built with extensive AI assistant collaboration:
+- **Claude Code** (Opus 4) — initial scaffold, portal components, MCP server configs, type fixes
+- **OpenCode** (this session) — TypeScript error fixes, CI workflow fixes, GATE validation, demo PR script
+
+All architectural decisions, code review, and integration testing were performed by the human participant. AI was used as a pair-programming partner; no code was submitted without review.
+
+### Architecture overview
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│              User → Chat (React/Vite portal)                │
+└──────────────────────────┬──────────────────────────────────┘
+                           │ SSE streaming
+                           ▼
+┌─────────────────────────────────────────────────────────────┐
+│       TrueForge Agent Harness (localhost:8790)              │
+│  ┌──────────────────┐  ┌──────────────────┐                │
+│  │ Generic Agent    │  │  Sub-agents      │                │
+│  │ (Llama-4-Maverick│  │  (parallel DB    │                │
+│  │ via OpenRouter)  │  │   queries)       │                │
+│  └────────┬─────────┘  └────────┬─────────┘                │
+│           │                     │                          │
+│           ▼                     ▼                          │
+│  ┌──────────────────────────────────────────┐               │
+│  │ MCP Servers (4):                         │               │
+│  │  • sqlite-local (in-sandbox, approvals)  │               │
+│  │  • google-sheets (OAuth, read+write)     │               │
+│  │  • google-classroom (OAuth, read)        │               │
+│  │  • web-search (read)                     │               │
+│  └──────────────────────────────────────────┘               │
+│                                                              │
+│  Approval gating: ALL writes require human "y"              │
+└─────────────────────────────────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────┐
+│   Sandbox (Daytona/Code Mode — deterministic Python)        │
+│   • 17 stdlib-only scripts in sandbox/{validation,           │
+│     matching,analytics,execution}                          │
+│   • OR-Tools for matching/optimization                      │
+│   • All anomalies logged to session_log table               │
+└─────────────────────────────────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────┐
+│   GitHub (paulson2dahl/Codeconstruct)                        │
+│   • CI: lint, python-test, node-test, gate-check            │
+│   • Qodo: auto-review on every PR                           │
+│   • GH Pages: portal auto-deployed from main                │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
 **Built with TrueForge** — The agent framework for reliable, auditable AI operations.
