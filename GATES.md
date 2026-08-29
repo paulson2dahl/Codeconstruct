@@ -24,9 +24,9 @@ Scope: Verify TrueForge runs locally, schema is created from sql/schema.sql, see
   EXPECT: /duplicates=1 out_of_range=1 order_break=1 gaps=3/
   EVIDENCE: pending
 
-- [ ] G5: All 4 validation scripts exist in sandbox/validation/
-  CHECK: for f in sandbox/validation/detect_duplicates.py sandbox/validation/detect_range.py sandbox/validation/detect_order.py sandbox/validation/detect_gaps.py; do test -f "$f" || { echo "missing: $f"; exit 1; }; done && echo "all 4 scripts exist"
-  EXPECT: all 4 scripts exist
+- [ ] G5: All 6 validation scripts exist in sandbox/validation/ (duplicates, range, order, gaps, outliers, referential)
+  CHECK: for f in sandbox/validation/detect_duplicates.py sandbox/validation/detect_range.py sandbox/validation/detect_order.py sandbox/validation/detect_gaps.py sandbox/validation/detect_outliers.py sandbox/validation/detect_referential.py; do test -f "$f" || { echo "missing: $f"; exit 1; }; done && echo "all 6 scripts exist"
+  EXPECT: all 6 scripts exist
   EVIDENCE: pending
 
 - [ ] G6: agent.json matches the TrueForge agent spec format (model, instructions, mcp_servers, config)

@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [master, main]
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   # Gate 1: GATES.md structural lint
   lint-gates:
@@ -26,8 +30,15 @@ jobs:
         with: { python-version: '3.12' }
       - name: Seed database
         run: python3 scripts/seed-database.py
-      - name: Verify schema
-        run: node --experimental-vm-modules -e "import sqlite3 from 'sqlite3'; import {open} from 'sqlite'; const db = await open({filename: 'school_ops.db', driver: sqlite3.Database}); const t = await db.all(\"SELECT name FROM sqlite_master WHERE type='table'\"); console.log('Tables:', t.map(r => r.name).join(', ')); await db.close();"
+      - name: Verify schema (raw SQL check)
+        run: node -e "
+          const sqlite3 = require('sqlite3');
+          const db = new sqlite3.Database('./school_ops.db');
+          db.all(\"SELECT name FROM sqlite_master WHERE type='table'\", (_, rows) => {
+            console.log('Tables:', rows.map(r => r.name).join(', '));
+            db.close();
+          });
+        "
       - name: Verify anomalies
         run: python3 sandbox/validation/detect_duplicates.py && python3 sandbox/validation/detect_range.py && python3 sandbox/validation/detect_order.py && python3 sandbox/validation/detect_gaps.py
 
@@ -38,7 +49,10 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: '22' }
-      - run: npm install sqlite3 sqlite
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - name: Install dependencies
+        run: npm install && npm install sqlite3
       - name: Seed database
         run: python3 scripts/seed-database.py
       - name: Verify seed
@@ -72,7 +86,7 @@ jobs:
         with: { node-version: '22' }
       - uses: actions/setup-python@v5
         with: { python-version: '3.12' }
-      - run: npm install sqlite3 sqlite
+      - run: npm install && npm install sqlite3
       - name: Run all gate checks
         run: |
           python3 scripts/seed-database.py

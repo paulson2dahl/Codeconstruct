@@ -1,0 +1,28 @@
+name: Qodo Code Review
+
+on:
+  pull_request:
+    types: [opened, reopened, ready_for_review, synchronize]
+    branches: [main, master]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  qodo-review:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Qodo Code Review
+        uses: qodo-ai/qodo-code-review-action@v1
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          qodo-token: ${{ secrets.QODO_TOKEN }}
+        env:
+          QODO_API_KEY: ${{ secrets.QODO_TOKEN }}
