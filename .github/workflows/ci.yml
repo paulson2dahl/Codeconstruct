@@ -62,19 +62,10 @@ jobs:
       - name: Verify agent spec
         run: node scripts/verify-agent.mjs
 
-  # Qodo Code Review (Best Code Quality track)
-  qodo-review:
-    runs-on: ubuntu-latest
-    needs: lint-gates
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-      - name: Qodo Code Review
-        uses: qodo/qodo-code-review-action@v1
-        with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          qodo-token: ${{ secrets.QODO_TOKEN }}
+  # Qodo Code Review is provided by the Qodo GitHub App
+  # (install via https://app.qodo.ai → Integrations → GitHub).
+  # The .pr_agent.toml in this repo configures review behavior.
+  # No GitHub Action needed — the App subscribes to PR events directly.
 
   # Build and verify all gates pass
   gate-check:
