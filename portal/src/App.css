@@ -1,0 +1,61 @@
+.tf-app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--tf-bg);
+}
+
+.tf-app-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.tf-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+
+/* Page transitions */
+.tf-page {
+  animation: pageIn 200ms ease;
+}
+
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Focus visible for accessibility */
+*:focus-visible {
+  outline: 2px solid var(--tf-primary);
+  outline-offset: 2px;
+}
+
+/* Selection */
+::selection {
+  background: var(--tf-primary-light);
+  color: var(--tf-text-strong);
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --tf-border: #888;
+    --tf-border-light: #aaa;
+  }
+}

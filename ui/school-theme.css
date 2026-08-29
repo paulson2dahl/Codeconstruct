@@ -1,0 +1,297 @@
+/**
+ * School Operations Responder — Custom UI Theme Override
+ * -------------------------------------------------------
+ * This CSS file provides school-themed styling for the TrueForge Chat UI.
+ * It overrides the default TrueForge theme to create an educational environment
+ * aesthetic with a green color palette.
+ *
+ * To apply: Inject this CSS into the TrueForge frontend by adding a
+ * <style> tag to index.html, or configure a reverse proxy (e.g., nginx)
+ * to append this as a CSS override file served from /assets/school-theme.css.
+ */
+
+/* ===== School Theme Color Palette ===== */
+
+/* Green primary colors for school identity */
+:root {
+  /* Primary greens */
+  --tf-school-green-600: #2e7d32;
+  --tf-school-green-500: #4caf50;
+  --tf-school-green-400: #66bb6a;
+  --tf-school-green-300: #81c784;
+  --tf-school-green-200: #a5d6a7;
+  --tf-school-green-100: #c8e6c9;
+  --tf-school-green-50: #e8f5e9;
+
+  /* Accent gold */
+  --tf-school-gold-500: #ffb300;
+  --tf-school-gold-400: #ffc107;
+  --tf-school-gold-300: #ffca28;
+
+  /* Background */
+  --tf-school-bg-primary: #f1f8e9;
+  --tf-school-bg-secondary: #e8f5e9;
+  --tf-school-bg-card: #ffffff;
+
+  /* Text */
+  --tf-school-text-primary: #1b5e20;
+  --tf-school-text-secondary: #388e3c;
+  --tf-school-text-accent: #1b5e20;
+
+  /* Borders */
+  --tf-school-border-light: #c8e6c9;
+  --tf-school-border-default: #a5d6a7;
+}
+
+/* ===== Chat Container Background ===== */
+
+/* Main chat background with subtle pattern */
+#app,
+.app-container,
+.chat-container,
+.tf-chat {
+  background-image: linear-gradient(135deg, var(--tf-school-bg-primary) 0%, var(--tf-school-bg-secondary) 100%);
+  background-size: cover;
+  background-attachment: fixed;
+}
+
+/* ===== Message Bubbles ===== */
+
+/* User/AI message bubbles — school green */
+.message-user,
+.message-human,
+.user-message,
+[data-message-role="user"] {
+  background: linear-gradient(135deg, var(--tf-school-green-500), var(--tf-school-green-600));
+  color: #ffffff;
+}
+
+.message-assistant,
+.message-ai,
+.ai-message,
+.bot-message,
+[data-message-role="assistant"] {
+  background: var(--tf-school-bg-card);
+  border: 1px solid var(--tf-school-border-light);
+  border-radius: 18px 18px 18px 4px;
+}
+
+/* ===== Approval Panel / Diff Table ===== */
+
+/* Highlight important actions in gold */
+.approve-button,
+[data-action="approve"],
+.tf-checkpoint-approve {
+  background: linear-gradient(135deg, var(--tf-school-gold-400), var(--tf-school-gold-500));
+  color: var(--tf-school-text-primary);
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  box-shadow: 0 2px 8px rgba(255, 179, 0, 0.3);
+  transition: transform 0.2s ease;
+}
+
+.approve-button:hover,
+[data-action="approve"]:hover,
+.tf-checkpoint-approve:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 179, 0, 0.4);
+}
+
+.reject-button,
+[data-action="reject"],
+.tf-checkpoint-reject {
+  background: #f44336;
+  color: #ffffff;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  transition: opacity 0.2s ease;
+}
+
+.reject-button:hover,
+[data-action="reject"]:hover,
+.tf-checkpoint-reject:hover {
+  opacity: 0.85;
+}
+
+/* Diff table highlights for Anomaly Report Cards */
+.diff-row-corrected {
+  background-color: var(--tf-school-green-50) !important;
+  border-left: 3px solid var(--tf-school-green-400);
+}
+
+.diff-row-warning {
+  background-color: #fff8e1;
+  border-left: 3px solid var(--tf-school-gold-400);
+}
+
+.diff-row-error {
+  background-color: #ffebee;
+  border-left: 3px solid #f44336;
+}
+
+/* ===== Header & Navigation ===== */
+
+.tf-header,
+app-header,
+.header-bar {
+  background: linear-gradient(90deg, var(--tf-school-green-600), var(--tf-school-green-400));
+  color: #ffffff;
+}
+
+/* ===== Input Area ===== */
+
+.input-area,
+.input-container,
+input[type="text"],
+textarea,
+.tf-input-box {
+  background-color: var(--tf-school-bg-card);
+  border: 2px solid var(--tf-school-border-light);
+  border-radius: 24px;
+  color: var(--tf-school-text-primary);
+}
+
+.input-area:focus-within,
+.input-container:focus-within,
+.tf-input-box:focus-within {
+  border-color: var(--tf-school-green-400);
+  box-shadow: 0 0 0 2px var(--tf-school-green-200);
+}
+
+/* ===== Loading Indicators ===== */
+
+.loading-spinner,
+.tf-spinner {
+  border-top-color: var(--tf-school-green-500);
+  border-right-color: var(--tf-school-green-500);
+}
+
+/* ===== Subagent Telemetry ===== */
+
+.subagent-badge,
+[data-subagent-status] {
+  background-color: var(--tf-school-green-100);
+  color: var(--tf-school-text-primary);
+  border-radius: 12px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.subagent-badge.active,
+[data-subagent-status="running"] {
+  background-color: var(--tf-school-green-400);
+  color: #ffffff;
+}
+
+/* ===== Audit Log / Session Log ===== */
+
+.session-log-entry,
+.log-item {
+  border-left: 3px solid var(--tf-school-green-300);
+}
+
+.log-entry-approved {
+  border-left-color: var(--tf-school-green-500);
+}
+
+.log-entry-blocked {
+  border-left-color: #f44336;
+}
+
+.log-entry-system {
+  border-left-color: var(--tf-school-gold-400);
+}
+
+/* ===== Status Badges ===== */
+
+.status-badge-pending {
+  background-color: #fff8e1;
+  color: #795548;
+}
+
+.status-badge-approved {
+  background-color: var(--tf-school-green-100);
+  color: var(--tf-school-text-primary);
+  font-weight: 600;
+}
+
+.status-badge-rejected {
+  background-color: #ffebee;
+  color: #c62828;
+  font-weight: 600;
+}
+
+/* ===== Typography Adjustments ===== */
+
+body {
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+/* ===== Custom Scrollbar ===== */
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--tf-school-bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--tf-school-green-300);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--tf-school-green-400);
+}
+
+/**
+ * === School-Themed Background Image ===
+ * A subtle academic pattern can be loaded as a background image.
+ * Example: A watermark of a school building or education icon pattern.
+ *
+ * To use an actual image asset, place it in /app/src/lib/assets/school-bg.png
+ * and reference it here:
+ *
+ * body {
+ *   background-image: url('/assets/school-bg.png');
+ *   background-repeat: repeat;
+ *   background-position: center;
+ *   background-size: auto;
+ *   background-attachment: scroll;
+ * }
+ *
+ * The image should be:
+ * - Subtle/opacity-adjusted (10-15% opacity)
+ * - Academic themed (books, chalkboards, school buildings)
+ * - Non-distracting to conversation content
+ */
+
+/* ===== Dark Mode Adaptations ===== */
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --tf-school-bg-primary: #0d2616;
+    --tf-school-bg-secondary: #123a22;
+    --tf-school-bg-card: #1b4332;
+    --tf-school-text-primary: #d7f5d3;
+    --tf-school-text-secondary: #a3d9a5;
+    --tf-school-border-light: #2a5c3a;
+  }
+
+  .message-assistant,
+  .ai-message,
+  .bot-message {
+    border-color: #2a5c3a;
+  }
+
+  .diff-row-corrected {
+    background-color: #0c291a !important;
+  }
+}

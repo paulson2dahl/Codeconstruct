@@ -1,0 +1,87 @@
+/* Base reset and school-themed tokens */
+:root {
+  --tf-bg: #1a1f25;
+  --tf-bg-alt: #222831;
+  --tf-bg-card: #2a313d;
+  --tf-bg-hover: #323946;
+  --tf-text: #e5e5e5;
+  --tf-text-muted: #a0a0b0;
+  --tf-text-strong: #ffffff;
+  --tf-primary: #4a90d9;
+  --tf-primary-hover: #3d7bc8;
+  --tf-primary-light: #4a90d933;
+  --tf-secondary: #f5a623;
+  --tf-success: #7ed321;
+  --tf-warning: #f5a623;
+  --tf-error: #d0021b;
+  --tf-info: #4a90d9;
+  --tf-border: #444b5a;
+  --tf-border-light: #5a6475;
+  --tf-divider: #3a4150;
+  --tf-font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --tf-font-mono: 'Fira Code', 'Monaco', 'Consolas', monospace;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+body {
+  background: var(--tf-bg);
+  color: var(--tf-text);
+  font-family: var(--tf-font-body);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Chalkboard paper texture effect */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background:
+    radial-gradient(circle at 10% 20%, rgba(74, 144, 217, 0.03) 0%, transparent 20%),
+    radial-gradient(circle at 90% 80%, rgba(245, 166, 35, 0.03) 0%, transparent 20%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.tf-app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.tf-app-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Custom scrollbars */
+.tf-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.tf-scrollbar::-webkit-scrollbar-track {
+  background: var(--tf-bg-alt);
+}
+.tf-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--tf-border);
+  border-radius: 3px;
+  transition: background 150ms ease;
+}
+.tf-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--tf-primary);
+}

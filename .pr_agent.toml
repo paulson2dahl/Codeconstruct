@@ -1,0 +1,43 @@
+# Qodo (formerly PR Agent) Configuration for School Ops Responder
+# https://qodo.ai/docs
+
+[config]
+# Model to use for code review
+model = "openrouter/anthropic/claude-sonnet-4-6"
+# Fallback models
+fallback_models = ["openrouter/openai/gpt-4o-mini", "openrouter/google/gemini-2.0-flash"]
+
+# Language and tone
+language = "English"
+verbosity = "concise"
+
+# Focus areas for review (prioritize correctness and security for school data)
+[review]
+require_code_scanning_alerts = false
+persistent_comment = true
+extra_instructions = """
+You are reviewing a School Operations Responder agent built on TrueForge.
+Focus on:
+1. Correctness of marks validation logic (duplicates, range, order, gaps)
+2. SQL injection safety (parameterized queries)
+3. Privacy: no real student data; synthetic only
+4. Approval gating: never write without human approval
+5. Sandbox execution: validation runs in Daytona sandbox
+"""
+
+[review_config]
+model = "openrouter/anthropic/claude-sonnet-4-6"
+# Review for bugs, security, performance, and code quality
+enable_all_reviewers = true
+
+[coding_policies]
+# School operations domain: correctness is paramount
+enforce_parameterized_queries = true
+require_input_validation = true
+require_error_handling = true
+max_function_length = 100
+max_line_length = 120
+
+[config.git_diff]
+# Review all file types
+exclude = ["*.db", "*.log", "node_modules/*", "__pycache__/*", "*.pyc"]

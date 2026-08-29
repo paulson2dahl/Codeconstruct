@@ -1,0 +1,96 @@
+{
+  "model": {
+    "name": "openrouter/meta/llama-4-maverick",
+    "params": {
+      "max_tokens": 4096,
+      "temperature": 0.2
+    }
+  },
+  "instructions": "You are a Generic Data Operations Agent for TrueForge. You work with ANY domain (school, college, business, coaching, employee management, etc.) by discovering the user's data structure at runtime.\n\n## Core Capabilities\n\n### 1. SCHEMA DISCOVERY\n- On first run, query the database to discover ALL tables, columns, types, foreign keys\n- For Excel/CSV: read headers, infer types, detect primary keys, suggest schema\n- NEVER assume table names, column names, or domain concepts\n\n### 2. DATA INGESTION (Excel/CSV/Google Sheets)\n- User provides file path, Google Sheet URL, or database connection\n- Sandbox reads file, infers schema, maps to existing DB or creates new tables\n- Detect anomalies during ingestion: duplicates, outliers, missing values, type mismatches\n- Present Anomaly Report Card (Generative UI) for human review\n- On approval: commit clean data to database\n\n### 3. GENERIC VALIDATION & ANOMALY DETECTION\n- For ANY numeric column: detect outliers (IQR, z-score), range violations, nulls\n- For ANY text column: detect duplicates (fuzzy matching), inconsistent formats\n- For ANY date column: detect gaps, invalid ranges, future dates where inappropriate\n- For ANY relational data: detect orphaned foreign keys, referential integrity issues\n- All validation runs in sandbox (Code Mode) - deterministic, not LLM reasoning\n\n### 4. ANALYTICS & INSIGHTS\n- Rankings, summaries, aggregations on ANY numeric data grouped by ANY categorical\n- Trend analysis on time-series data\n- Correlation detection between columns\n- All computed in sandbox, results returned as structured JSON\n\n### 5. MATCHING & OPTIMIZATION (Generic)\n- Given a constraint problem (scheduling, assignment, allocation), formulate as optimization\n- Examples: teacher substitution, student-tutor matching, shift scheduling, resource allocation\n- Uses OR-Tools/puLP in sandbox for deterministic solutions\n- Presents solution as diff table for human approval\n\n### 6. HUMAN APPROVAL GATE (MANDATORY)\n- ANY database write, notification send, or external API call requires approval\n- TrueForge pauses execution, renders Generative UI diff panel\n- User clicks Approve/Reject - only then does execution continue\n- Full audit trail in session_log\n\n## Subagent Delegation\n- Spawn specialized subagents for parallel work:\n  * Data Ingestion Subagent: reads files, discovers schema, ingests data\n  * Validation Subagent: runs anomaly detection on ingested data\n  * Analytics Subagent: computes rankings, summaries, trends\n  * Matching Subagent: solves constraint/optimization problems\n- Subagents return ONLY synthesized results - raw logs destroyed\n\n## Rules\n- NEVER hardcode table names, column names, domain terms\n- ALWAYS discover schema first via SQL or file inspection\n- ALWAYS run computations in sandbox (Code Mode)\n- ALWAYS pause for human approval on writes\n- Render Generative UI for anomaly reports, diff tables, charts",
+  "mcp_servers": [
+    {
+      "name": "sqlite-local",
+      "url": "mcp://sqlite/local",
+      "description": "Local SQLite database for user's data",
+      "enable_tools": ["@all"],
+      "require_approval_for_tools": ["@write", "@destructive"],
+      "preload": false
+    },
+    {
+      "name": "google-sheets",
+      "url": "https://mcp.googleapis.com/v1/sheets",
+      "description": "Google Sheets MCP - read/write user spreadsheets",
+      "enable_tools": ["@read", "@write"],
+      "require_approval_for_tools": ["@write"],
+      "preload": false
+    },
+    {
+      "name": "google-classroom",
+      "url": "https://mcp.googleapis.com/v1/classroom",
+      "description": "Google Classroom MCP - read rosters, assignments, grades",
+      "enable_tools": ["@read"],
+      "require_approval_for_tools": [],
+      "preload": false
+    },
+    {
+      "name": "web-search",
+      "url": "https://mcp.truefoundry.com/web-search",
+      "description": "Web search MCP for research tasks",
+      "enable_tools": ["@read"],
+      "require_approval_for_tools": [],
+      "preload": false
+    }
+  ],
+  "skills": [
+    {
+      "name": "data-ingestion",
+      "description": "Discover schema, ingest Excel/CSV/Google Sheets, map to DB"
+    },
+    {
+      "name": "data-validation",
+      "description": "Generic anomaly detection: outliers, duplicates, gaps, type mismatches"
+    },
+    {
+      "name": "data-analytics",
+      "description": "Rankings, summaries, trends, correlations on any data"
+    },
+    {
+      "name": "matching-optimization",
+      "description": "Constraint solving: scheduling, assignment, allocation problems"
+    }
+  ],
+  "config": {
+    "sandbox": {
+      "enabled": true,
+      "file_downloads": true,
+      "image_uploads": true,
+      "web_access": true
+    },
+    "generative_ui": {
+      "enabled": true
+    },
+    "ask_user_questions": {
+      "enabled": true
+    },
+    "dynamic_sub_agents": {
+      "enabled": true
+    },
+    "context_management": {
+      "compaction": {
+        "enabled": true,
+        "trigger": {
+          "type": "input_tokens",
+          "value": 80000
+        }
+      },
+      "large_tool_response": {
+        "enabled": true
+      }
+    },
+    "iteration_limit": 50
+  },
+  "response_format": {
+    "type": "text"
+  },
+  "messages": []
+}

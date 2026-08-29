@@ -1,0 +1,29 @@
+{
+  "name": "school-ops-responder",
+  "version": "1.0.0",
+  "description": "TrueForge agent for school operations: marks integrity, timetable, syllabus, attendance, exams",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "seed": "python3 scripts/seed-database.py",
+    "verify:schema": "node scripts/verify-schema.mjs",
+    "verify:seed": "node scripts/verify-seed.mjs",
+    "verify:anomalies": "node scripts/verify-anomalies.mjs",
+    "verify:agent": "node scripts/verify-agent.mjs",
+    "gate:lint": "node scripts/gate-lint.mjs GATES.md",
+    "gate:check": "node scripts/gate-check.mjs GATES.md",
+    "gate:approve": "node scripts/gate-check.mjs --approve GATES.md",
+    "gate:reverify": "node scripts/gate-check.mjs --reverify GATES.md",
+    "dev": "npx tsx tf-client.ts",
+    "test": "python3 scripts/seed-database.py && node scripts/verify-schema.mjs && node scripts/verify-seed.mjs && node scripts/verify-anomalies.mjs && node scripts/verify-agent.mjs"
+  },
+  "dependencies": {
+    "@truefoundry/trueforge-sdk": "^1.0.0",
+    "sqlite3": "^5.1.0",
+    "tsx": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.0.0"
+  }
+}

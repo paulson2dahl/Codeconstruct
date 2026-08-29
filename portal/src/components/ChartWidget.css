@@ -1,0 +1,154 @@
+.tf-chart-widget {
+  background: var(--tf-bg-alt);
+  border: 1px solid var(--tf-border);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 250ms ease;
+}
+
+.tf-chart-widget.fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1000;
+  border-radius: 0;
+  background: var(--tf-bg);
+}
+
+.tf-chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: var(--tf-bg-card);
+  border-bottom: 1px solid var(--tf-divider);
+}
+
+.tf-chart-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tf-chart-icon {
+  color: var(--tf-primary);
+}
+
+.tf-chart-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--tf-text-strong);
+  margin: 0;
+}
+
+.tf-chart-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tf-chart-type-select {
+  padding: 6px 10px;
+  background: var(--tf-bg);
+  border: 1px solid var(--tf-border);
+  border-radius: 6px;
+  color: var(--tf-text);
+  font-size: 12px;
+  cursor: pointer;
+  outline: none;
+}
+
+.tf-chart-type-select:focus {
+  border-color: var(--tf-primary);
+}
+
+.tf-chart-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: 1px solid var(--tf-border);
+  border-radius: 6px;
+  color: var(--tf-text-muted);
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.tf-chart-btn:hover {
+  background: var(--tf-bg-hover);
+  border-color: var(--tf-primary);
+  color: var(--tf-primary);
+}
+
+.tf-chart-toggle {
+  background: none;
+  border: none;
+  color: var(--tf-text-muted);
+  cursor: pointer;
+  padding: 4px;
+}
+
+.tf-chart-body {
+  padding: 16px;
+}
+
+.tf-chart-container {
+  width: 100%;
+}
+
+.tf-chart-data-info {
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: var(--tf-bg);
+  border: 1px solid var(--tf-border);
+  border-radius: 6px;
+  font-size: 11px;
+  color: var(--tf-text-muted);
+  text-align: center;
+}
+
+.tf-chart-tooltip {
+  background: var(--tf-bg-card);
+  border: 1px solid var(--tf-border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.tf-tooltip-label {
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--tf-text-strong);
+  margin-bottom: 6px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--tf-divider);
+}
+
+.tf-tooltip-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  font-size: 12px;
+}
+
+.tf-tooltip-row::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 2px solid;
+}
+
+.tf-tooltip-name {
+  color: var(--tf-text-muted);
+}
+
+.tf-tooltip-value {
+  color: var(--tf-text-strong);
+  font-weight: 500;
+}

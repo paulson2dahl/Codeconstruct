@@ -1,0 +1,309 @@
+.tf-anomaly-card {
+  background: var(--tf-bg-alt);
+  border: 1px solid var(--tf-border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.tf-anomaly-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: var(--tf-bg-card);
+  border-bottom: 1px solid var(--tf-divider);
+}
+
+.tf-anomaly-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tf-anomaly-icon {
+  color: var(--tf-warning);
+  flex-shrink: 0;
+}
+
+.tf-anomaly-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--tf-text-strong);
+  margin: 0;
+}
+
+.tf-anomaly-count {
+  font-size: 12px;
+  color: var(--tf-text-muted);
+  background: var(--tf-bg);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.tf-anomaly-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tf-severity-filter {
+  display: flex;
+  gap: 4px;
+}
+
+.tf-filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: var(--tf-bg);
+  border: 1px solid var(--tf-border);
+  border-radius: 6px;
+  color: var(--tf-text-muted);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.tf-filter-btn:hover {
+  border-color: var(--tf-primary);
+  color: var(--tf-text);
+}
+
+.tf-filter-btn.active {
+  background: var(--tf-primary-light);
+  border-color: var(--tf-primary);
+  color: var(--tf-primary);
+}
+
+.tf-filter-count {
+  background: var(--tf-bg);
+  padding: 1px 6px;
+  border-radius: 8px;
+  font-size: 10px;
+}
+
+.tf-anomaly-toggle {
+  background: none;
+  border: none;
+  color: var(--tf-text-muted);
+  cursor: pointer;
+  padding: 4px;
+}
+
+.tf-anomaly-summary {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--tf-bg);
+  border-bottom: 1px solid var(--tf-divider);
+}
+
+.tf-summary-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px;
+  background: var(--tf-bg-card);
+  border: 1px solid var(--tf-border);
+  border-radius: 8px;
+}
+
+.tf-summary-count {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.tf-summary-item.error .tf-summary-count { color: #d0021b; }
+.tf-summary-item.warning .tf-summary-count { color: #f5a623; }
+.tf-summary-item.info .tf-summary-count { color: #4a90d9; }
+
+.tf-summary-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--tf-text-muted);
+}
+
+.tf-anomaly-body {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.tf-anomaly-table-group {
+  border-bottom: 1px solid var(--tf-divider);
+}
+
+.tf-anomaly-table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: var(--tf-bg-card);
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.tf-table-name {
+  color: var(--tf-text-strong);
+}
+
+.tf-table-count {
+  font-size: 12px;
+  color: var(--tf-text-muted);
+  font-weight: 400;
+}
+
+.tf-anomaly-list {
+  padding: 8px 16px;
+}
+
+.tf-anomaly-row {
+  border: 1px solid var(--tf-border);
+  border-radius: 8px;
+  margin-bottom: 8px;
+  overflow: hidden;
+  background: var(--tf-bg-card);
+  transition: all 150ms ease;
+}
+
+.tf-anomaly-row:hover {
+  border-color: var(--tf-primary);
+}
+
+.tf-anomaly-row.error { border-left: 3px solid #d0021b; }
+.tf-anomaly-row.warning { border-left: 3px solid #f5a623; }
+.tf-anomaly-row.info { border-left: 3px solid #4a90d9; }
+
+.tf-anomaly-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  cursor: pointer;
+}
+
+.tf-anomaly-severity {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.tf-anomaly-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.tf-anomaly-message {
+  font-size: 13px;
+  color: var(--tf-text);
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+
+.tf-anomaly-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 11px;
+}
+
+.tf-anomaly-type {
+  background: var(--tf-bg);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--tf-text-muted);
+  font-family: var(--tf-font-mono);
+}
+
+.tf-anomaly-column {
+  color: var(--tf-primary);
+  font-weight: 500;
+}
+
+.tf-anomaly-count-badge {
+  color: var(--tf-text-muted);
+}
+
+.tf-anomaly-actions {
+  display: flex;
+  gap: 4px;
+  padding-right: 8px;
+}
+
+.tf-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: var(--tf-text-muted);
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.tf-icon-btn:hover {
+  background: var(--tf-bg-hover);
+  color: var(--tf-primary);
+}
+
+.tf-anomaly-details {
+  padding: 0 12px 12px;
+  border-top: 1px solid var(--tf-divider);
+  background: var(--tf-bg);
+  animation: slideDown 200ms ease;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; max-height: 0; }
+  to { opacity: 1; max-height: 500px; }
+}
+
+.tf-anomaly-details pre {
+  margin: 8px 0;
+  padding: 10px;
+  background: var(--tf-bg-card);
+  border: 1px solid var(--tf-border);
+  border-radius: 6px;
+  font-size: 11px;
+  overflow-x: auto;
+  max-height: 200px;
+}
+
+.tf-anomaly-samples h5 {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--tf-text-muted);
+  margin: 8px 0 4px;
+}
+
+.tf-sample-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tf-anomaly-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  color: var(--tf-text-muted);
+  text-align: center;
+}
+
+.tf-anomaly-empty svg {
+  color: var(--tf-success);
+  margin-bottom: 12px;
+}

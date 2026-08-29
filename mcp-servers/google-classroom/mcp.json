@@ -1,0 +1,109 @@
+{
+  "name": "google-classroom",
+  "version": "1.0.0",
+  "description": "Google Classroom MCP server for reading rosters, assignments, and grades",
+  "type": "http",
+  "url": "https://mcp.googleapis.com/v1/classroom",
+  "auth": {
+    "type": "oauth2",
+    "scopes": [
+      "https://www.googleapis.com/auth/classroom.rosters.readonly",
+      "https://www.googleapis.com/auth/classroom.courses.readonly",
+      "https://www.googleapis.com/auth/classroom.coursework.students.readonly",
+      "https://www.googleapis.com/auth/classroom.guardianlinks.students.readonly"
+    ],
+    "authorization_url": "https://accounts.google.com/o/oauth2/v2/auth",
+    "token_url": "https://oauth2.googleapis.com/token"
+  },
+  "capabilities": {
+    "tools": {
+      "list_courses": {
+        "description": "List all courses the user has access to",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "teacher_id": { "type": "string", "description": "Optional teacher ID to filter courses" },
+            "student_id": { "type": "string", "description": "Optional student ID to filter courses" },
+            "course_states": { "type": "array", "items": { "type": "string", "enum": ["ACTIVE", "ARCHIVED", "PROVISIONED", "DECLINED"] }, "default": ["ACTIVE"] }
+          }
+        }
+      },
+      "get_course": {
+        "description": "Get details of a specific course",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "course_id": { "type": "string" }
+          },
+          "required": ["course_id"]
+        }
+      },
+      "list_students": {
+        "description": "List students in a course",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "course_id": { "type": "string" },
+            "page_size": { "type": "integer", "default": 100 }
+          },
+          "required": ["course_id"]
+        }
+      },
+      "list_teachers": {
+        "description": "List teachers in a course",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "course_id": { "type": "string" }
+          },
+          "required": ["course_id"]
+        }
+      },
+      "list_coursework": {
+        "description": "List assignments/coursework for a course",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "course_id": { "type": "string" },
+            "state": { "type": "string", "enum": ["PUBLISHED", "DRAFT", "DELETED"], "default": "PUBLISHED" }
+          },
+          "required": ["course_id"]
+        }
+      },
+      "list_student_submissions": {
+        "description": "List student submissions for an assignment",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "course_id": { "type": "string" },
+            "coursework_id": { "type": "string" },
+            "student_id": { "type": "string", "description": "Optional: filter by specific student" }
+          },
+          "required": ["course_id", "coursework_id"]
+        }
+      },
+      "get_grades": {
+        "description": "Get grades for a course or assignment",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "course_id": { "type": "string" },
+            "coursework_id": { "type": "string", "description": "Optional: specific assignment" }
+          },
+          "required": ["course_id"]
+        }
+      }
+    },
+    "resources": {
+      "classroom://courses": {
+        "name": "All Courses",
+        "description": "List of all accessible courses"
+      },
+      "classroom://courses/{course_id}/roster": {
+        "name": "Course Roster",
+        "description": "Students and teachers in a course"
+      }
+    }
+  },
+  "require_approval_for": []
+}

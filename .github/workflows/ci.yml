@@ -1,0 +1,83 @@
+name: CI — School Ops Responder
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
+jobs:
+  # Gate 1: GATES.md structural lint
+  lint-gates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - name: Lint GATES.md
+        run: node scripts/gate-lint.mjs GATES.md
+
+  # Gate 2-4: Python seed + verification
+  python-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - name: Seed database
+        run: python3 scripts/seed-database.py
+      - name: Verify schema
+        run: node --experimental-vm-modules -e "import sqlite3 from 'sqlite3'; import {open} from 'sqlite'; const db = await open({filename: 'school_ops.db', driver: sqlite3.Database}); const t = await db.all(\"SELECT name FROM sqlite_master WHERE type='table'\"); console.log('Tables:', t.map(r => r.name).join(', ')); await db.close();"
+      - name: Verify anomalies
+        run: python3 sandbox/validation/detect_duplicates.py && python3 sandbox/validation/detect_range.py && python3 sandbox/validation/detect_order.py && python3 sandbox/validation/detect_gaps.py
+
+  # Gate 3: Node verification scripts
+  node-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - run: npm install sqlite3 sqlite
+      - name: Seed database
+        run: python3 scripts/seed-database.py
+      - name: Verify seed
+        run: node scripts/verify-seed.mjs
+      - name: Verify anomalies
+        run: node scripts/verify-anomalies.mjs
+      - name: Verify agent spec
+        run: node scripts/verify-agent.mjs
+
+  # Qodo Code Review (Best Code Quality track)
+  qodo-review:
+    runs-on: ubuntu-latest
+    needs: lint-gates
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Qodo Code Review
+        uses: qodo/qodo-code-review-action@v1
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          qodo-token: ${{ secrets.QODO_TOKEN }}
+
+  # Build and verify all gates pass
+  gate-check:
+    runs-on: ubuntu-latest
+    needs: [python-test, node-test]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - run: npm install sqlite3 sqlite
+      - name: Run all gate checks
+        run: |
+          python3 scripts/seed-database.py
+          node scripts/verify-seed.mjs
+          node scripts/verify-anomalies.mjs
+          node scripts/verify-schema.mjs
+          node scripts/verify-agent.mjs
+          echo "All gates passed!"

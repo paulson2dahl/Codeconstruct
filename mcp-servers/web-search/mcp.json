@@ -1,0 +1,55 @@
+{
+  "name": "web-search",
+  "version": "1.0.0",
+  "description": "Web search MCP server for research tasks",
+  "type": "http",
+  "url": "https://mcp.truefoundry.com/web-search",
+  "auth": {
+    "type": "api_key",
+    "header": "Authorization",
+    "prefix": "Bearer "
+  },
+  "capabilities": {
+    "tools": {
+      "search": {
+        "description": "Search the web for information",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": { "type": "string", "description": "Search query" },
+            "max_results": { "type": "integer", "default": 10, "minimum": 1, "maximum": 50 },
+            "safe_search": { "type": "boolean", "default": true },
+            "recency_days": { "type": "integer", "description": "Filter results to last N days" },
+            "site": { "type": "string", "description": "Limit search to specific domain" }
+          },
+          "required": ["query"]
+        }
+      },
+      "fetch": {
+        "description": "Fetch and extract content from a URL",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "url": { "type": "string", "format": "uri" },
+            "extract_text": { "type": "boolean", "default": true },
+            "max_length": { "type": "integer", "default": 10000 }
+          },
+          "required": ["url"]
+        }
+      },
+      "search_news": {
+        "description": "Search for recent news articles",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": { "type": "string" },
+            "max_results": { "type": "integer", "default": 10 },
+            "recency_days": { "type": "integer", "default": 7 }
+          },
+          "required": ["query"]
+        }
+      }
+    }
+  },
+  "require_approval_for": []
+}
