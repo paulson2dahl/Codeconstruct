@@ -30,6 +30,8 @@ jobs:
         with: { python-version: '3.12' }
       - name: Seed database
         run: python3 scripts/seed-database.py
+      - name: Install Node dependencies for sqlite3
+        run: npm install sqlite3
       - name: Verify schema (raw SQL check)
         run: |
           node -e "
@@ -53,7 +55,7 @@ jobs:
       - uses: actions/setup-python@v5
         with: { python-version: '3.12' }
       - name: Install dependencies
-        run: npm install && npm install sqlite3
+        run: npm install
       - name: Seed database
         run: python3 scripts/seed-database.py
       - name: Verify seed
