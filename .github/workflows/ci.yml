@@ -31,14 +31,15 @@ jobs:
       - name: Seed database
         run: python3 scripts/seed-database.py
       - name: Verify schema (raw SQL check)
-        run: node -e "
+        run: |
+          node -e "
           const sqlite3 = require('sqlite3');
           const db = new sqlite3.Database('./school_ops.db');
           db.all(\"SELECT name FROM sqlite_master WHERE type='table'\", (_, rows) => {
             console.log('Tables:', rows.map(r => r.name).join(', '));
             db.close();
           });
-        "
+          "
       - name: Verify anomalies
         run: python3 sandbox/validation/detect_duplicates.py && python3 sandbox/validation/detect_range.py && python3 sandbox/validation/detect_order.py && python3 sandbox/validation/detect_gaps.py
 
