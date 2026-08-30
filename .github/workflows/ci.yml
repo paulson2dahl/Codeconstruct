@@ -26,21 +26,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
       - uses: actions/setup-python@v5
         with: { python-version: '3.12' }
       - name: Seed database
         run: python3 scripts/seed-database.py
+      - name: Install Node dependencies for sqlite3
+        run: npm install
       - name: Verify schema (raw SQL check)
-        run: node -e "
+        run: |
+          node -e "
           const sqlite3 = require('sqlite3');
           const db = new sqlite3.Database('./school_ops.db');
           db.all(\"SELECT name FROM sqlite_master WHERE type='table'\", (_, rows) => {
             console.log('Tables:', rows.map(r => r.name).join(', '));
             db.close();
           });
-        "
+          "
       - name: Verify anomalies
-        run: python3 sandbox/validation/detect_duplicates.py && python3 sandbox/validation/detect_range.py && python3 sandbox/validation/detect_order.py && python3 sandbox/validation/detect_gaps.py
+        run: node scripts/verify-anomalies.mjs
 
   # Gate 3: Node verification scripts
   node-test:
@@ -52,7 +57,7 @@ jobs:
       - uses: actions/setup-python@v5
         with: { python-version: '3.12' }
       - name: Install dependencies
-        run: npm install && npm install sqlite3
+        run: npm install
       - name: Seed database
         run: python3 scripts/seed-database.py
       - name: Verify seed
@@ -77,7 +82,7 @@ jobs:
         with: { node-version: '22' }
       - uses: actions/setup-python@v5
         with: { python-version: '3.12' }
-      - run: npm install && npm install sqlite3
+      - run: npm install
       - name: Run all gate checks
         run: |
           python3 scripts/seed-database.py
