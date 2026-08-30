@@ -72,11 +72,19 @@ def detect_iqr_outliers(db_path: str, table: str, column: str,
 
 
 def _iqr_check(values: list, group: str = None) -> list[dict]:
-    n = len(values)
+    # Coerce each value to float; drop any that cannot be converted.
+    numeric = []
+    for v in values:
+        try:
+            numeric.append(float(v))
+        except (TypeError, ValueError):
+            pass  # skip non-numeric cells (text, BLOB, etc.)
+
+    n = len(numeric)
     if n < 4:
         return []
 
-    sorted_vals = sorted(values)
+    sorted_vals = sorted(numeric)
     q1_idx = n // 4
     q3_idx = 3 * n // 4
     q1 = sorted_vals[q1_idx]
