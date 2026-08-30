@@ -10,12 +10,13 @@ Usage (from agent Code Mode):
   python3 run_validation.py '{"action": "validate_marks", "db_path": "/sandbox/school_ops.db"}'
 
 Actions:
-  validate_marks  — Run all 4 anomaly detectors (duplicates, range, order, gaps)
-  substitution    — Propose substitution for absent_subject
-  syllabus_swap   — Propose syllabus period swaps for class_section
-  rank_list       — Generate rank list for exam + subject
-  class_summary   — Generate per-class summary for exam
-  apply_correction — Apply an approved mark correction (after human approval)
+  validate_marks      — Run all 5 anomaly detectors (duplicates, range, order, gaps, IQR outliers)
+  validate_marks_iqr  — Run IQR outlier detection with severity levels and optional grouping
+  substitution        — Propose substitution for absent_subject
+  syllabus_swap       — Propose syllabus period swaps for class_section
+  rank_list           — Generate rank list for exam + subject
+  class_summary       — Generate per-class summary for exam
+  apply_correction    — Apply an approved mark correction (after human approval)
 
 Output: JSON to stdout (consumed by the TrueForge event stream)
 """
@@ -47,11 +48,25 @@ def resolve_db(db_path):
     return os.path.join(os.getcwd(), "school_ops.db")
 
 def run_python_script(script_path, args, db_path=None):
-    """Run a Python script and return its JSON output."""
+    """Run a Python script and return its JSON output.
+
+    Supports two calling conventions:
+    - Positional: script_path [--db db_path] [...args]
+    - JSON: script_path '<json_request>'
+    Scripts that accept only JSON (detect_duplicates, detect_gaps) are
+    detected by the presence of a dict as the first element of args.
+    """
     cmd = [sys.executable, script_path]
-    if db_path:
-        cmd.append(db_path)
-    cmd.extend(args)
+    if args and isinstance(args[0], dict):
+        # JSON-mode: scripts that don't accept positional args
+        request = args[0]
+        if db_path:
+            request["db_path"] = db_path
+        cmd.append(json.dumps(request))
+    else:
+        if db_path:
+            cmd.extend(["--db", db_path])
+        cmd.extend(args)
     result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
     if result.returncode != 0:
         return {"error": result.stderr, "script": os.path.basename(script_path)}
@@ -61,11 +76,13 @@ def run_python_script(script_path, args, db_path=None):
         return {"raw_output": result.stdout, "script": os.path.basename(script_path)}
 
 def validate_marks(db_path):
-    """Run all 4 anomaly detectors and return a combined report."""
+    """Run all 5 anomaly detectors and return a combined report."""
     validation_dir = os.path.join(PARENT_DIR, "validation")
     results = {
         "duplicates": run_python_script(
-            os.path.join(validation_dir, "detect_duplicates.py"), [], db_path
+            os.path.join(validation_dir, "detect_duplicates.py"),
+            [{"action": "detect_duplicates", "table": "students", "column": "roll_number"}],
+            db_path
         ),
         "out_of_range": run_python_script(
             os.path.join(validation_dir, "detect_range.py"), [], db_path
@@ -74,27 +91,63 @@ def validate_marks(db_path):
             os.path.join(validation_dir, "detect_order.py"), [], db_path
         ),
         "gaps": run_python_script(
-            os.path.join(validation_dir, "detect_gaps.py"), [], db_path
+            os.path.join(validation_dir, "detect_gaps.py"),
+            [{"action": "detect_sequence_gaps", "table": "students", "column": "roll_number"}],
+            db_path
         ),
+        "iqr_outliers": _run_iqr_outlier_detection(db_path),
     }
 
-    # Build a summary for the anomaly report card
     summary = {
         "total_anomalies": (
             results["duplicates"].get("duplicates_found", 0)
             + results["out_of_range"].get("out_of_range_found", 0)
             + results["order_break"].get("order_issues_found", 0)
             + results["gaps"].get("gaps_found", 0)
+            + results["iqr_outliers"].get("count", 0)
         ),
         "breakdown": {
             "duplicates": results["duplicates"].get("duplicates_found", 0),
             "out_of_range": results["out_of_range"].get("out_of_range_found", 0),
             "order_breaks": results["order_break"].get("order_issues_found", 0),
             "gaps": results["gaps"].get("gaps_found", 0),
+            "iqr_outliers": results["iqr_outliers"].get("count", 0),
         },
         "details": results,
     }
     return summary
+
+
+def _run_iqr_outlier_detection(db_path):
+    """Run IQR outlier detection on marks table with subject-level grouping."""
+    validation_dir = os.path.join(PARENT_DIR, "validation")
+    script = os.path.join(validation_dir, "detect_iqr_outliers.py")
+    result = run_python_script(script, [
+        "--db", db_path,
+        "--table", "marks",
+        "--column", "marks_obtained",
+        "--group-by", "subject_id",
+    ])
+    return result
+
+
+def validate_marks_iqr(db_path, table="marks", column="marks_obtained", group_by=None):
+    """Run IQR outlier detection with severity levels.
+
+    Args:
+        db_path: Path to SQLite database
+        table: Table name to analyze (default: marks)
+        column: Numeric column to check (default: marks_obtained)
+        group_by: Optional column to group by (e.g. subject_id for per-subject analysis)
+    """
+    validation_dir = os.path.join(PARENT_DIR, "validation")
+    args = ["--db", db_path, "--table", table, "--column", column]
+    if group_by:
+        args.extend(["--group-by", group_by])
+    result = run_python_script(
+        os.path.join(validation_dir, "detect_iqr_outliers.py"), args
+    )
+    return result
 
 def propose_substitution(absent_subject, db_path):
     """Run substitution_match.py for the absent teacher's subject."""
@@ -191,6 +244,13 @@ def main():
 
     if action == "validate_marks":
         result = validate_marks(db_path)
+    elif action == "validate_marks_iqr":
+        result = validate_marks_iqr(
+            db_path,
+            table=request.get("table", "marks"),
+            column=request.get("column", "marks_obtained"),
+            group_by=request.get("group_by"),
+        )
     elif action == "substitution":
         result = propose_substitution(request.get("absent_subject"), db_path)
     elif action == "syllabus_swap":

@@ -28,6 +28,7 @@ You are a **Data Validation Subagent** for the Generic Data Operations Agent. Yo
 
 | Script | Purpose |
 |--------|---------|
+| `detect_iqr_outliers.py` | IQR outliers with severity levels (medium/high) and group-by support |
 | `detect_outliers.py` | IQR/Z-score outliers on numeric columns |
 | `detect_duplicates.py` | Duplicate values in any column |
 | `detect_gaps.py` | Missing dates/sequences |
@@ -41,10 +42,17 @@ You are a **Data Validation Subagent** for the Generic Data Operations Agent. Yo
 
 ### 2. Run Validations in Parallel
 Spawn sub-tasks (or run sequentially) for each check:
-- Outliers: `detect_outliers.py '{"action": "detect_all_outliers", "db_path": "/sandbox/user_data.db"}'`
+- Outliers (preferred for severity-graded analysis): `detect_iqr_outliers.py --db /sandbox/user_data.db --table marks --column marks_obtained --group-by subject_id`
+- Outliers (legacy IQR/Z-score): `detect_outliers.py '{"action": "detect_all_outliers", "db_path": "/sandbox/user_data.db"}'`
 - Duplicates: `detect_duplicates.py '{"action": "detect_all_duplicates", "db_path": "/sandbox/user_data.db"}'`
 - Date gaps: `detect_gaps.py '{"action": "detect_date_gaps", "db_path": "/sandbox/user_data.db", "table": "table", "column": "date_col"}'`
 - Referential: `detect_referential.py '{"action": "check_all", "db_path": "/sandbox/user_data.db"}'`
+
+The `detect_iqr_outliers.py` script returns `{"outliers": [...], "count": N}` where each
+outlier carries a `severity` of `"medium"` (between 1.5× and 3× IQR) or `"high"` (>= 3× IQR),
+plus the IQR bounds used. Group-by analysis preserves frequencies — repeated values are
+expanded by their occurrence count so `n` and quartile positions are correct on any data
+where ties exist.
 
 ### 3. Synthesize Results
 Aggregate all anomalies into a unified **Validation Report Card**:

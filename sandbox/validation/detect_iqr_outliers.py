@@ -4,17 +4,30 @@ IQR-based outlier detection for numeric columns.
 
 Uses interquartile range method to flag values beyond Q1 - 1.5*IQR
 and Q3 + 1.5*IQR boundaries.
+
+Severity levels:
+- "medium" : 1.5*IQR <= |v - median| < 3.0*IQR (mild outlier, Tukey fence)
+- "high"   : |v - median| >= 3.0*IQR             (extreme outlier)
+
+Read-only: never INSERTs into the target database. Audit emission
+must go through the approval-aware orchestration layer, not directly
+into the analyzed database.
 """
 import argparse
 import json
 import sqlite3
-import statistics
 from pathlib import Path
 
 
 def detect_iqr_outliers(db_path: str, table: str, column: str,
                         group_by: str = None) -> list[dict]:
-    """Detect outliers using IQR method."""
+    """Detect outliers using IQR method.
+
+    If `group_by` is supplied, the query returns one row per
+    (group, value) pair with a frequency count. We expand that
+    into the full list of observations so quartiles and `n` are
+    computed over every source row, not over distinct values.
+    """
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     cur = conn.cursor()
@@ -35,6 +48,7 @@ def detect_iqr_outliers(db_path: str, table: str, column: str,
 
     cur.execute(query)
     rows = cur.fetchall()
+    conn.close()
 
     if not rows:
         return []
@@ -43,9 +57,11 @@ def detect_iqr_outliers(db_path: str, table: str, column: str,
         groups = {}
         for row in rows:
             key = row[group_by]
+            count = row["count"]
             if key not in groups:
                 groups[key] = []
-            groups[key].append(row[column])
+            # Expand by frequency: this value appeared `count` times.
+            groups[key].extend([row[column]] * count)
         outliers = []
         for key, values in groups.items():
             outliers.extend(_iqr_check(values, key))
@@ -66,8 +82,12 @@ def _iqr_check(values: list, group: str = None) -> list[dict]:
     q1 = sorted_vals[q1_idx]
     q3 = sorted_vals[q3_idx]
     iqr = q3 - q1
+    # Tukey fences (mild outlier boundary)
     lower = q1 - 1.5 * iqr
     upper = q3 + 1.5 * iqr
+    # Extreme outlier boundary (3 * IQR from the quartiles)
+    lower_extreme = q1 - 3.0 * iqr
+    upper_extreme = q3 + 3.0 * iqr
 
     result = []
     for v in sorted_vals:
@@ -77,7 +97,7 @@ def _iqr_check(values: list, group: str = None) -> list[dict]:
                 "group": group,
                 "lower_bound": round(lower, 2),
                 "upper_bound": round(upper, 2),
-                "severity": "high" if (v < lower - iqr or v > upper + iqr) else "medium"
+                "severity": "high" if (v < lower_extreme or v > upper_extreme) else "medium",
             })
     return result
 
@@ -91,17 +111,10 @@ def main():
     args = parser.parse_args()
 
     result = detect_iqr_outliers(args.db, args.table, args.column, args.group_by)
+    # Read-only: print results to stdout. Audit logging is the
+    # responsibility of the orchestration layer (run_validation.py),
+    # which routes through the approval workflow.
     print(json.dumps({"outliers": result, "count": len(result)}, indent=2))
-
-    conn = sqlite3.connect(args.db)
-    cur = conn.cursor()
-    cur.execute("""
-        INSERT INTO session_log (session_id, event_type, tool_name, tool_input, tool_output, approval_status)
-        VALUES ('demo', 'sandbox_run', 'detect_iqr_outliers',
-                ?, ?, 'auto')
-    """, (f"{args.table}.{args.column}", json.dumps(result)))
-    conn.commit()
-    conn.close()
 
 
 if __name__ == "__main__":
