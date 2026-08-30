@@ -72,13 +72,18 @@ def detect_iqr_outliers(db_path: str, table: str, column: str,
 
 
 def _iqr_check(values: list, group: str = None) -> list[dict]:
-    # Coerce each value to float; drop any that cannot be converted.
+    # Coerce each value to float; drop any that cannot be converted
+    # or are non-finite (NaN, +inf, -inf). Non-finite values would
+    # otherwise poison quartile arithmetic and the JSON output.
     numeric = []
     for v in values:
         try:
-            numeric.append(float(v))
+            f = float(v)
         except (TypeError, ValueError):
-            pass  # skip non-numeric cells (text, BLOB, etc.)
+            continue
+        if f != f or f in (float("inf"), float("-inf")):  # NaN check + inf
+            continue
+        numeric.append(f)
 
     n = len(numeric)
     if n < 4:
