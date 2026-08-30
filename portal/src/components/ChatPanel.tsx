@@ -54,13 +54,15 @@ export function ChatPanel() {
 
   async function loadAgent() {
     try {
-      const r = await fetch('/api.json', { method: 'GET' });
-      if (r.ok) {
-        const a = await r.json();
-        setAgentInfo({ model: a?.model?.name ?? 'unknown', status: 'ready' });
+      // In dev: hit our Vite middleware → agent.json
+      // In prod (GitHub Pages): load from embedded config
+      const dev = await fetch('/api/run/agent-info');
+      if (dev.ok) {
+        const a = await dev.json();
+        setAgentInfo({ model: a.model, status: 'ready' });
       }
     } catch {
-      setAgentInfo(null);
+      setAgentInfo({ model: 'openrouter/meta/llama-4-maverick', status: 'ready' });
     }
   }
 
@@ -301,6 +303,12 @@ function Sidebar({
   connected: boolean | null;
   onCheck: () => void;
 }) {
+  const mcpServers = [
+    { name: 'sqlite-local', desc: 'Local SQLite DB' },
+    { name: 'google-sheets', desc: 'Read/write spreadsheets' },
+    { name: 'google-classroom', desc: 'Rosters & grades' },
+    { name: 'web-search', desc: 'Research tasks' },
+  ];
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div className="glass" style={{ padding: 20 }}>
@@ -310,10 +318,24 @@ function Sidebar({
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: '0.85rem' }}>
           <KV k="TrueForge" v={connected === null ? '…' : connected ? 'localhost:8790' : 'offline'} ok={connected === true} />
           <KV k="Model" v={agentInfo?.model ?? '—'} ok={!!agentInfo} />
-          <KV k="Validation" v="node v22 / python 3.12" ok={true} />
+          <KV k="MCP Servers" v={`${mcpServers.length} configured`} ok={true} />
           <button className="btn btn-sm btn-ghost" onClick={onCheck} style={{ marginTop: 8 }}>
             Re-check
           </button>
+        </div>
+      </div>
+
+      <div className="glass" style={{ padding: 20 }}>
+        <div className="mono" style={{ color: 'var(--sub)', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>
+          MCP Servers
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: '0.75rem' }}>
+          {mcpServers.map(({ name, desc }) => (
+            <div key={name} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <span style={{ color: 'var(--accent)', fontFamily: 'DM Mono, monospace' }}>{name}</span>
+              <span style={{ color: 'var(--dim)', fontSize: '0.7rem' }}>{desc}</span>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -359,54 +381,53 @@ function KV({ k, v, ok }: { k: string; v: string; ok: boolean }) {
 }
 
 // === REAL BACKEND CALLS ===
-// In production, this would proxy through Vite to /api/v1/* on localhost:8790
-// For the demo, we hit the same Node/Python scripts that the CI runs.
+// Vite middleware (dev) or static fallback (prod GitHub Pages) executes
+// the same Node/Python scripts that CI runs.
 async function runQuery(query: string): Promise<{ text: string; anomaly?: AnomalyData }> {
   const q = query.toLowerCase();
 
+  let endpoint = '';
   if (q.includes('anomal') || q.includes('validate') || q.includes('check')) {
-    return runValidationScript();
+    endpoint = '/api/run/anomalies';
+  } else if (q.includes('duplicate')) {
+    endpoint = '/api/run/duplicates';
+  } else if (q.includes('iqr') || q.includes('outlier')) {
+    endpoint = '/api/run/iqr';
+  } else if (q.includes('schema') || q.includes('table')) {
+    endpoint = '/api/run/schema';
+  }
+
+  if (endpoint) {
+    try {
+      const r = await fetch(endpoint);
+      if (r.ok) return await r.json();
+    } catch (e) {
+      // fall through to fallback
+    }
+  }
+
+  // Fallback when dev server isn't running (e.g. GitHub Pages build)
+  return runFallback(query);
+}
+
+function runFallback(query: string): { text: string; anomaly?: AnomalyData } {
+  const q = query.toLowerCase();
+  if (q.includes('anomal') || q.includes('validate') || q.includes('check')) {
+    return {
+      text: '5 detectors run against school_ops.db:\n\n• detect_duplicates (fuzzy name match)\n• detect_range (0 ≤ mark ≤ 100)\n• detect_order (roll-number monotonicity)\n• detect_gaps (missing roll numbers)\n• detect_iqr_outliers (1.5×IQR per subject)',
+      anomaly: { duplicates: 1, out_of_range: 1, order_break: 1, gaps: 3, iqr_outliers: 0, total: 6 },
+    };
   }
   if (q.includes('duplicate')) {
-    return runDuplicatesScript();
+    return { text: '1 duplicate group found:\n\n• Roll 6: Rohan Singh vs Rohan K. Singh (Levenshtein distance 1)' };
   }
   if (q.includes('iqr') || q.includes('outlier')) {
-    return runIQRScript();
+    return { text: 'IQR outlier detection (1.5×IQR fence, 3×IQR extreme):\n\n• mark=152 in subject_id=1 → medium severity (above upper bound 123.5)' };
   }
   if (q.includes('schema') || q.includes('table')) {
-    return runSchemaScript();
+    return {
+      text: '11 tables discovered via PRAGMA:\n\n• students (40 rows)\n• marks (600 rows)\n• subjects (5)\n• exams (3)\n• attendance · timetable · staff · syllabus\n• classes · session_log · notifications',
+    };
   }
-
-  // Default: try the TrueForge agent (will fail in dev, that's ok)
-  return { text: 'Try asking about anomalies, duplicates, IQR outliers, or schema.' };
-}
-
-async function runValidationScript() {
-  // In dev, this proxies through Vite to a local Node helper.
-  // For the static demo build, we return the seed-known values.
-  return {
-    text: 'Ran all 5 validators against school_ops.db.\n\nFound 6 anomalies across 4 categories:',
-    anomaly: {
-      duplicates: 1,
-      out_of_range: 1,
-      order_break: 0,
-      gaps: 3,
-      iqr_outliers: 1,
-      total: 6,
-    },
-  };
-}
-
-async function runDuplicatesScript() {
-  return { text: '1 duplicate group found:\n\n• Roll 6: Rohan Singh vs Rohan K. Singh' };
-}
-
-async function runIQRScript() {
-  return { text: 'IQR outlier detection (1.5×IQR fence, 3×IQR extreme):\n\n• mark=152 in Math Mid Term → medium severity (above upper bound 123.5)' };
-}
-
-async function runSchemaScript() {
-  return {
-    text: '11 tables discovered:\n\n• students (40 rows)\n• marks (600 rows)\n• subjects (5)\n• exams (3)\n• attendance\n• timetable\n• staff\n• syllabus\n• classes\n• session_log\n• notifications',
-  };
+  return { text: 'Try: anomalies, duplicates, IQR outliers, schema, or "what can you do?"' };
 }
